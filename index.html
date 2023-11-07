@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DALL-E HD + Natural API</title>
+<title>Generate HD Natural Images with DALL-E 3 API</title>
 <style>
 #progressBarContainer {
   width: 100%;
   background-color: #ddd;
-  display: none; /* Hide initially */
+  display: none; /* Hidden initially */
 }
 
 #progressBar {
@@ -39,29 +39,34 @@
 <script>
 // Function to call the DALL-E 3 API and generate an image
 async function generateImage(apiKey, prompt) {
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: "dall-e-3",
-            prompt: prompt,
-            n: 1,
-            size: "1792x1024",
-            quality: "hd",
-            style: "natural"
-        })
-    });
+    try {
+        const response = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "dall-e-3",
+                prompt: prompt,
+                n: 1,
+                size: "1792x1024",
+                quality: "hd",
+                style: "natural"
+            })
+        });
 
-    const data = await response.json();
-    return data;
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error generating image:', error);
+        return null;
+    }
 }
 
 function updateProgressBar(progressBar, value) {
-    progressBar.style.width = value + '%';
-    progressBar.textContent = value + '%';
+    progressBar.style.width = value.toFixed(1) + '%'; // Round to one decimal place
+    progressBar.textContent = value.toFixed(1) + '%'; // Display rounded value
 }
 
 document.getElementById('generateImage').addEventListener('click', async () => {
@@ -83,39 +88,37 @@ document.getElementById('generateImage').addEventListener('click', async () => {
 
     // Show the progress bar container
     progressBarContainer.style.display = 'block';
-
-    // Reset the progress bar and result
     updateProgressBar(progressBar, 0);
+
+    // Reset the result
     imageResultDiv.innerHTML = "";
 
-    // Simulate a faster load time for the progress bar
+    // Call the API and display the result
+    const result = await generateImage(apiKey, prompt);
+    if (result && result.data && result.data.length > 0) {
+        imageResultDiv.innerHTML = `<img src="${result.data[0].url}" alt="Generated Image" style="max-width:100%; height:auto;" />`;
+    } else {
+        imageResultDiv.innerHTML = "No image was generated.";
+    }
+
+    // Hide the progress bar container
+    progressBarContainer.style.display = 'none';
+});
+
+// Simulate progress bar update
+function simulateProgress() {
+    const progressBar = document.getElementById('progressBar');
     let progress = 0;
     const interval = setInterval(() => {
-        progress += 1; // Increment progress by 1% every 200ms
-        updateProgressBar(progressBar, progress);
-        if (progress >= 100) {
+        if (progress < 100) {
+            progress += (100 / 3500); // Increment the progress to reach 100% in 35 seconds
+            updateProgressBar(progressBar, progress);
+        } else {
             clearInterval(interval);
-            // Hide the progress bar container after reaching 100%
-            progressBarContainer.style.display = 'none';
         }
-    }, 200); // Update every 200 milliseconds
+    }, 10); // Update every 10 milliseconds
+}
 
-    // Call the API and display the result after 20 seconds
-    setTimeout(async () => {
-        try {
-            const result = await generateImage(apiKey, prompt);
-            if (result.data && result.data.length > 0) {
-                imageResultDiv.innerHTML = `<img src="${result.data[0].url}" alt="Generated Image" style="max-width:100%; height:auto;" />`;
-            } else {
-                imageResultDiv.innerHTML = "No image was generated.";
-            }
-        } catch (error) {
-            console.error('Error generating image:', error);
-            imageResultDiv.innerHTML = "Error generating image. Please check the console for more information.";
-        }
-        // Hide the progress bar container after the image is generated
-        progressBarContainer.style.display = 'none';
-    }, 20000); // Wait for 20 seconds before calling the API
-});</script>
+document.getElementById('generateImage').addEventListener('click', simulateProgress);</script>
 </body>
 </html>

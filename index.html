@@ -108,7 +108,7 @@ function simulateProgress() {
     clearInterval(interval); // Clear any existing intervals
     interval = setInterval(() => {
         if (progress < 100) {
-            progress += (100 / 3500); // Increment the progress to reach 100% in 35 seconds
+            progress += (100 / 2100); // Increment the progress to reach 100% in 35 seconds
             updateProgressBar(progressBar, progress);
         } else {
             clearInterval(interval); // Clear the interval once it reaches 100%

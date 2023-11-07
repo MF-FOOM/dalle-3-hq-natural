@@ -37,6 +37,8 @@
 <div id="imageResult"></div>
 
 <script>
+let interval; // Declare interval globally to clear it later
+
 // Function to call the DALL-E 3 API and generate an image
 async function generateImage(apiKey, prompt) {
     try {
@@ -69,6 +71,20 @@ function updateProgressBar(progressBar, value) {
     progressBar.textContent = value.toFixed(1) + '%'; // Display rounded value
 }
 
+function simulateProgress() {
+    const progressBar = document.getElementById('progressBar');
+    let progress = 0;
+    clearInterval(interval); // Clear any existing intervals
+    interval = setInterval(() => {
+        if (progress < 100) {
+            progress += (100 / 3500); // Increment the progress to reach 100% in 35 seconds
+            updateProgressBar(progressBar, progress);
+        } else {
+            clearInterval(interval); // Clear the interval once it reaches 100%
+        }
+    }, 10); // Update every 10 milliseconds
+}
+
 document.getElementById('generateImage').addEventListener('click', async () => {
     const apiKey = document.getElementById('apiKey').value;
     const prompt = document.getElementById('prompt').value;
@@ -86,12 +102,14 @@ document.getElementById('generateImage').addEventListener('click', async () => {
         return;
     }
 
-    // Show the progress bar container
+    // Show the progress bar container and reset its state
     progressBarContainer.style.display = 'block';
     updateProgressBar(progressBar, 0);
 
     // Reset the result
     imageResultDiv.innerHTML = "";
+
+    simulateProgress(); // Start simulating progress
 
     // Call the API and display the result
     const result = await generateImage(apiKey, prompt);
@@ -101,24 +119,9 @@ document.getElementById('generateImage').addEventListener('click', async () => {
         imageResultDiv.innerHTML = "No image was generated.";
     }
 
-    // Hide the progress bar container
+    // Stop the progress bar and hide the container
+    clearInterval(interval);
     progressBarContainer.style.display = 'none';
-});
-
-// Simulate progress bar update
-function simulateProgress() {
-    const progressBar = document.getElementById('progressBar');
-    let progress = 0;
-    const interval = setInterval(() => {
-        if (progress < 100) {
-            progress += (100 / 3500); // Increment the progress to reach 100% in 35 seconds
-            updateProgressBar(progressBar, progress);
-        } else {
-            clearInterval(interval);
-        }
-    }, 10); // Update every 10 milliseconds
-}
-
-document.getElementById('generateImage').addEventListener('click', simulateProgress);</script>
+});</script>
 </body>
 </html>
